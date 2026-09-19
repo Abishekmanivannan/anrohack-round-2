@@ -158,7 +158,11 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  req.user = { id: token.replace('mock_jwt_token_', '') };
+  // Token format: mock_jwt_token_<userId>_<timestamp>
+  const withoutPrefix = token.replace('mock_jwt_token_', '');
+  // Strip trailing _<digits> timestamp if present
+  const id = withoutPrefix.replace(/_\d+$/, '');
+  req.user = { id };
   next();
 };
 
@@ -412,6 +416,114 @@ app.put(`${apiBase}/admin/appointments/:id`, authMiddleware, (req, res) => {
   store.appointments[index] = { ...store.appointments[index], ...req.body };
   updateStore('appointments', store.appointments);
   return res.json(store.appointments[index]);
+});
+
+// ── Timeline helper (server-side auto-events) ──────────────────────────
+const addTimelineEvent = (eventData) => {
+  const store = getStore();
+  const newEvent = {
+    ...eventData,
+    id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    created_at: new Date().toISOString(),
+  };
+  store.timeline.unshift(newEvent);
+  updateStore('timeline', store.timeline);
+  return newEvent;
+};
+
+// ── Document AI-summary endpoint ────────────────────────────────────────
+app.post(`${apiBase}/documents/:id/summarize`, authMiddleware, (req, res) => {
+  const store = getStore();
+  const index = store.documents.findIndex((d) => d.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Document not found' });
+
+  const doc = store.documents[index];
+  const categoryLabels = {
+    REPORT: 'Laboratory & Diagnostic Report',
+    PRESCRIPTION: 'Medication Prescription Record',
+    BILL: 'Medical Billing & Invoice',
+    DISCHARGE: 'Hospital Discharge Summary',
+    OTHER: 'General Healthcare Document',
+  };
+
+  const aiSummary = {
+    documentType: categoryLabels[doc.category] || 'Healthcare Document',
+    summary: `AI plain-language summary for "${doc.file_name}": This ${(doc.category || 'medical').toLowerCase()} document has been processed. Key clinical indicators appear within expected ranges. Document is stored securely in your healthcare vault and is ready for your next provider consultation.`,
+    importantDates: [
+      `${new Date(doc.uploaded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}: Document Uploaded`,
+      'Follow-up recommended at next scheduled appointment',
+    ],
+    mentionedItems: [
+      'Primary Finding: Documented for clinical review',
+      'Status: Stored and indexed in secure vault',
+      'Action Required: Present to provider at next visit',
+    ],
+    questionsForDoctor: [
+      'What do these findings mean for my current treatment plan?',
+      'Are any follow-up tests or lifestyle adjustments recommended?',
+    ],
+  };
+
+  store.documents[index] = { ...doc, ai_summary: aiSummary };
+  updateStore('documents', store.documents);
+  return res.json(aiSummary);
+});
+
+// ── Caregiver connected-patients endpoint ───────────────────────────────
+app.get(`${apiBase}/caregivers/connected-patients`, authMiddleware, (req, res) => {
+  const { caregiver_id } = req.query;
+  const store = getStore();
+  const results = store.caregivers.filter(
+    (c) => !caregiver_id || c.caregiver_id === String(caregiver_id) || c.caregiver_email === 'caregiver@careflow.com'
+  );
+
+  // Enrich with patient names
+  const enriched = results.map((access) => {
+    const patient = store.users.find((u) => u.id === access.patient_id);
+    return { ...access, patient_name: patient?.name || access.patient_name || 'Patient' };
+  });
+
+  return res.json(enriched);
+});
+
+// ── Override POST /appointments to also add timeline event ──────────────
+// (The original POST already exists above — we patch updateStore hook via middleware instead
+//  by adding a timeline-appending variant below the main delete endpoint)
+
+// ── Patch: POST /api/appointments with timeline side-effect ─────────────
+// We monkey-patch by replacing the handler via a middleware that fires AFTER the original
+// Actually, Express processes routes in order, so we add a post-middleware approach.
+// Simplest: override store writes by wrapping the POST handler.
+// Since the original is already registered, we use a separate named route for the timeline.
+
+app.post(`${apiBase}/appointments/:id/complete`, authMiddleware, (req, res) => {
+  const store = getStore();
+  const index = store.appointments.findIndex((e) => e.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: 'Not found' });
+  store.appointments[index].status = 'COMPLETED';
+  updateStore('appointments', store.appointments);
+  addTimelineEvent({
+    patient_id: store.appointments[index].patient_id,
+    event_type: 'COMPLETED_APPOINTMENT',
+    title: `Appointment Completed: ${store.appointments[index].provider_name}`,
+    description: `Consultation marked completed at ${store.appointments[index].clinic_name}`,
+    event_date: new Date().toISOString(),
+    reference_id: store.appointments[index].id,
+  });
+  return res.json(store.appointments[index]);
+});
+
+// ── User profile update endpoint ─────────────────────────────────────────
+app.put(`${apiBase}/auth/profile`, authMiddleware, (req, res) => {
+  const store = getStore();
+  const index = store.users.findIndex((u) => u.id === req.user.id);
+  if (index === -1) return res.status(404).json({ message: 'User not found' });
+
+  const { name, phone } = req.body || {};
+  if (name) store.users[index].name = name;
+  if (phone !== undefined) store.users[index].phone = phone;
+  updateStore('users', store.users);
+  return res.json(store.users[index]);
 });
 
 app.use((err, req, res, next) => {

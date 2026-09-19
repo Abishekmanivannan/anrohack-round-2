@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 
@@ -35,6 +36,7 @@ export const App: React.FC = () => {
   return (
     <ToastProvider>
       <AuthProvider>
+        <NotificationProvider>
         <Router>
           <Routes>
             {/* Public Landing & Auth Routes */}
@@ -183,6 +185,7 @@ export const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
+        </NotificationProvider>
       </AuthProvider>
     </ToastProvider>
   );

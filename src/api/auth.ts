@@ -1,6 +1,6 @@
 import { User, UserRole } from '../types';
 import { apiFetch, isMockMode } from './client';
-import { MockAuth } from '../mock/storage';
+import { MockAuth, setItem } from '../mock/storage';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export interface LoginParams {
@@ -158,5 +158,26 @@ export const authApi = {
     } catch {
       return null;
     }
+  },
+
+  updateProfile: async (updates: { name?: string; phone?: string }): Promise<User> => {
+    if (isMockMode()) {
+      await new Promise(res => setTimeout(res, 400));
+      const current = MockAuth.getCurrentUser();
+      if (!current) throw new Error('Not authenticated');
+      const updated: User = { ...current, ...updates };
+      const users = MockAuth.getUsers();
+      const idx = users.findIndex(u => u.id === current.id);
+      if (idx !== -1) {
+        users[idx] = updated;
+        setItem('careflow_users', users);
+      }
+      MockAuth.setCurrentUser(updated);
+      return updated;
+    }
+    return apiFetch<User>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
   },
 };

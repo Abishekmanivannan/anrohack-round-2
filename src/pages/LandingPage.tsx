@@ -1,402 +1,721 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useScroll, useTransform, useInView, animate } from 'framer-motion';
 import {
   Activity,
   Bell,
   Calendar,
-  CheckCircle2,
   ChevronRight,
-  Clock3,
   FileText,
   Heart,
-  HeartPulse,
-  Home,
+  HeartHandshake,
   Lock,
+  Shield,
   ShieldCheck,
+  Sparkles,
   Stethoscope,
-  Syringe,
-  User,
-  WandSparkles,
+  Zap,
+  ArrowRight,
+  Star,
+  Clock,
+  Users,
+  CheckCircle2,
+  Brain,
+  CloudUpload,
+  Smartphone,
 } from 'lucide-react';
 
-const navItems = ['Home', 'Services', 'Doctors', 'Appointments', 'Health Records', 'Contact'];
+// ─── Animated counter hook ───────────────────────────────────────────────────
+function useAnimatedCounter(target: number, duration = 1.8, shouldStart: boolean = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!shouldStart) return;
+    const controls = animate(0, target, {
+      duration,
+      ease: 'easeOut',
+      onUpdate: v => setCount(Math.floor(v)),
+    });
+    return controls.stop;
+  }, [target, duration, shouldStart]);
+  return count;
+}
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: Home, active: true },
-  { label: 'Appointments', icon: Calendar },
-  { label: 'Doctors', icon: Stethoscope },
-  { label: 'Health Records', icon: FileText },
-  { label: 'Prescriptions', icon: Syringe },
-  { label: 'Lab Reports', icon: Activity },
-  { label: 'Health Monitoring', icon: HeartPulse },
-  { label: 'Messages', icon: Bell },
-  { label: 'Settings', icon: User },
-];
+// ─── Floating particle canvas ────────────────────────────────────────────────
+const ParticleCanvas: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-const serviceCards = [
-  { title: 'Doctor Consultation', subtitle: 'Connect with experienced doctors', icon: Stethoscope, tone: 'blue' },
-  { title: 'Appointments', subtitle: 'Schedule and manage your appointments', icon: Calendar, tone: 'sky' },
-  { title: 'Medication', subtitle: 'Track your medicines and get reminders', icon: Syringe, tone: 'slate' },
-  { title: 'Lab Reports', subtitle: 'Access your test results and reports', icon: FileText, tone: 'blue' },
-  { title: 'Health Monitoring', subtitle: 'Monitor your vital health information', icon: HeartPulse, tone: 'cyan' },
-  { title: 'Health Records', subtitle: 'Store and manage your medical records securely', icon: ShieldCheck, tone: 'sky' },
-];
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-const overviewCards = [
-  { label: 'Health Status', value: 'Good', detail: 'You are doing well', icon: CheckCircle2, tone: 'green' },
-  { label: 'Upcoming Appointment', value: '24 May 2025', detail: '10:30 AM', icon: Calendar, tone: 'blue' },
-  { label: 'Medication Reminder', value: '2 Medicines', detail: 'Due Today', icon: Syringe, tone: 'orange' },
-  { label: 'Lab Report', value: 'Blood Test', detail: '20 May 2025', icon: FileText, tone: 'blue' },
-  { label: 'Messages', value: '3', detail: 'Unread Messages', icon: Bell, tone: 'purple' },
-  { label: 'Prescriptions', value: '1', detail: 'Active Prescription', icon: FileText, tone: 'green' },
-  { label: 'Health Tips', value: 'Daily Tips', detail: 'Stay hydrated', icon: WandSparkles, tone: 'cyan' },
-];
+    let animId: number;
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
 
-const footerColumns = [
-  { title: 'Quick Links', items: ['Home', 'Services', 'Doctors', 'Appointments', 'Health Records'] },
-  { title: 'Support', items: ['Help Center', 'FAQs', 'Privacy Policy', 'Terms & Conditions', 'Contact Us'] },
-  { title: 'Contact Us', items: ['+1 234 567 8900', 'support@healthcare.com', '123 Health St, Medical City, USA'] },
-  { title: 'Newsletter', items: ['Subscribe to get health tips and updates'] },
-];
+    const particles: {
+      x: number; y: number; vx: number; vy: number;
+      size: number; alpha: number; hue: number;
+    }[] = Array.from({ length: 80 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      size: Math.random() * 2 + 0.5,
+      alpha: Math.random() * 0.5 + 0.1,
+      hue: Math.random() > 0.5 ? 171 : 220, // teal or indigo
+    }));
 
-const getToneClasses = (tone: string) => {
-  switch (tone) {
-    case 'green':
-      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-    case 'blue':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
-    case 'sky':
-      return 'bg-sky-100 text-sky-700 border-sky-200';
-    case 'slate':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
-    case 'cyan':
-      return 'bg-cyan-100 text-cyan-700 border-cyan-200';
-    case 'orange':
-      return 'bg-orange-100 text-orange-700 border-orange-200';
-    case 'purple':
-      return 'bg-violet-100 text-violet-700 border-violet-200';
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
-  }
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 80%, 65%, ${p.alpha})`;
+        ctx.fill();
+      });
+
+      // Draw connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `hsla(171, 80%, 65%, ${0.12 * (1 - dist / 100)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize); };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
 };
 
-export const LandingPage: React.FC = () => {
+// ─── Typewriter effect ───────────────────────────────────────────────────────
+const useTypewriter = (words: string[], speed = 80, pause = 2000) => {
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const [text, setText] = useState('');
+
+  useEffect(() => {
+    const word = words[index % words.length];
+    if (!deleting && subIndex <= word.length) {
+      const t = setTimeout(() => { setText(word.slice(0, subIndex)); setSubIndex(s => s + 1); }, speed);
+      return () => clearTimeout(t);
+    }
+    if (!deleting && subIndex > word.length) {
+      const t = setTimeout(() => setDeleting(true), pause);
+      return () => clearTimeout(t);
+    }
+    if (deleting && subIndex >= 0) {
+      const t = setTimeout(() => { setText(word.slice(0, subIndex)); setSubIndex(s => s - 1); }, speed / 2);
+      return () => clearTimeout(t);
+    }
+    if (deleting && subIndex < 0) {
+      setDeleting(false);
+      setIndex(i => i + 1);
+      setSubIndex(0);
+    }
+  }, [subIndex, deleting, index, words, speed, pause]);
+
+  return text;
+};
+
+// ─── Stats Section ───────────────────────────────────────────────────────────
+const stats = [
+  { value: 50000, suffix: '+', label: 'Active Patients', icon: Users },
+  { value: 98, suffix: '%', label: 'Satisfaction Rate', icon: Star },
+  { value: 120, suffix: '+', label: 'Clinical Partners', icon: Stethoscope },
+  { value: 24, suffix: '/7', label: 'AI Support', icon: Brain },
+];
+
+const StatCard: React.FC<{ value: number; suffix: string; label: string; icon: React.ElementType; index: number }> = ({
+  value, suffix, label, icon: Icon, index,
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  const count = useAnimatedCounter(value, 2 + index * 0.2, inView);
+
   return (
-    <div className="min-h-screen bg-[#eff4f9] text-slate-800">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edfaff] text-[#1c7ae0] shadow-sm ring-1 ring-sky-200">
-              <Heart className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-[2rem] font-bold tracking-tight leading-none text-slate-800">HealthCare</div>
-              <div className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Better Health, Better Life</div>
-            </div>
-          </div>
-
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-            {navItems.map((item) => (
-              <a
-                key={item}
-                href="#"
-                className={`transition ${item === 'Home' ? 'text-sky-600' : 'hover:text-slate-900'}`}
-              >
-                {item}
-              </a>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <button className="rounded-xl border border-sky-200 bg-white px-5 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
-              Log In
-            </button>
-            <button className="rounded-xl bg-[#1e5be8] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#174ac0]">
-              Sign Up
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
-        <div className="flex gap-6">
-          <aside className="hidden w-[250px] shrink-0 rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm lg:flex lg:flex-col">
-            <nav className="space-y-1.5">
-              {sidebarItems.map(({ label, icon: Icon, active }) => (
-                <button
-                  key={label}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${
-                    active
-                      ? 'bg-[#eaf3ff] text-[#1d5dd7] shadow-sm ring-1 ring-sky-100'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </nav>
-
-            <div className="mt-auto rounded-2xl border border-sky-100 bg-[#f2fbff] p-4">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                <ShieldCheck className="h-4 w-4 text-sky-600" />
-                Secure & Private
-              </div>
-              <p className="text-xs leading-5 text-slate-500">
-                We protect your health data and ensure complete privacy.
-              </p>
-              <Link to="#" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-sky-700">
-                Learn More <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </aside>
-
-          <main className="flex-1 rounded-[28px] bg-transparent">
-            <div className="mb-6 rounded-[28px] border border-slate-200 bg-[#f6f9fc] p-6 shadow-sm md:p-8">
-              <div className="mb-6 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-sky-700">
-                Welcome to Healthcare
-              </div>
-
-              <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-                <div className="max-w-[560px]">
-                  <h1 className="text-4xl font-bold tracking-[-0.05em] text-slate-800 sm:text-5xl">
-                    Your Health, <span className="text-[#1d5dd7]">Our Priority</span>
-                  </h1>
-                  <p className="mt-4 max-w-lg text-lg leading-8 text-slate-600">
-                    A trusted healthcare platform that connects you with doctors, services, and health information — anytime, anywhere.
-                  </p>
-
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <button className="rounded-xl bg-[#1e5be8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#174ac0]">
-                      Book Appointment
-                    </button>
-                    <button className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
-                      Explore Services
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid w-full max-w-[470px] grid-cols-2 gap-4">
-                  <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <div className="rounded-xl bg-[#edf5ff] p-2 text-sky-700"><HeartPulse className="h-4 w-4" /></div>
-                        <span className="text-sm font-semibold">Heart Rate</span>
-                      </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                      <div className="text-3xl font-bold text-slate-800">72</div>
-                      <div className="pb-1 text-xs text-slate-500">bpm</div>
-                    </div>
-                    <div className="mt-4 h-10 rounded-xl bg-gradient-to-r from-sky-100 to-sky-50 p-2">
-                      <div className="h-full w-full rounded-lg bg-[radial-gradient(circle_at_10%_50%,rgba(59,130,246,0.18),transparent_28%),linear-gradient(135deg,#dbeafe_0%,#eff6ff_30%,#dbeafe_100%)]" />
-                    </div>
-                  </div>
-
-                  <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <div className="rounded-xl bg-[#edf5ff] p-2 text-sky-700"><Activity className="h-4 w-4" /></div>
-                        <span className="text-sm font-semibold">Blood Pressure</span>
-                      </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                      <div className="text-3xl font-bold text-slate-800">120/80</div>
-                      <div className="pb-1 text-xs text-slate-500">mmHg</div>
-                    </div>
-                    <div className="mt-4 h-10 rounded-xl bg-gradient-to-r from-sky-100 to-sky-50 p-2">
-                      <div className="h-full w-full rounded-lg bg-[radial-gradient(circle_at_15%_45%,rgba(59,130,246,0.18),transparent_26%),linear-gradient(135deg,#dbeafe_0%,#eff6ff_30%,#dbeafe_100%)]" />
-                    </div>
-                  </div>
-
-                  <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <div className="rounded-xl bg-[#edf5ff] p-2 text-sky-700"><Heart className="h-4 w-4" /></div>
-                        <span className="text-sm font-semibold">Oxygen Level</span>
-                      </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                      <div className="text-3xl font-bold text-slate-800">98%</div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-center">
-                      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-[8px] border-sky-100 bg-white">
-                        <div className="absolute inset-0 rounded-full border-[6px] border-sky-500 border-t-transparent" style={{ transform: 'rotate(40deg)' }} />
-                        <span className="text-sm font-bold text-sky-700">85</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <div className="rounded-xl bg-[#edf5ff] p-2 text-sky-700"><Activity className="h-4 w-4" /></div>
-                        <span className="text-sm font-semibold">Health Score</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-3xl font-bold text-slate-800">85</div>
-                      <div className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-700">Good</div>
-                    </div>
-                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full w-[85%] rounded-full bg-gradient-to-r from-emerald-400 to-sky-500" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <div className="mb-5 flex items-center justify-between">
-                <h2 className="text-[2rem] font-bold tracking-[-0.05em] text-slate-800">Our Services</h2>
-                <button className="text-sm font-semibold text-sky-700 hover:text-sky-800">View All Services</button>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {serviceCards.map(({ title, subtitle, icon: Icon, tone }) => (
-                  <div key={title} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-[18px] border ${getToneClasses(tone)}`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-[1.05rem] font-bold text-slate-800">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h2 className="mb-5 text-[2rem] font-bold tracking-[-0.05em] text-slate-800">Dashboard Overview</h2>
-
-              <div className="grid gap-4 xl:grid-cols-[1.45fr_0.9fr]">
-                <div className="grid gap-4 md:grid-cols-2">
-                  {overviewCards.slice(0, 6).map(({ label, value, detail, icon: Icon, tone }) => (
-                    <div key={label} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <div className={`flex h-12 w-12 items-center justify-center rounded-xl border ${getToneClasses(tone)}`}>
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-400">{label}</div>
-                      </div>
-                      <div className="mt-4 text-2xl font-bold tracking-tight text-slate-800">{value}</div>
-                      <div className="mt-1 text-sm text-slate-500">{detail}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-slate-800">Upcoming Appointment</h3>
-                    <div className="rounded-xl bg-slate-100 p-2 text-slate-700"><Calendar className="h-4 w-4" /></div>
-                  </div>
-
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="mb-3 flex items-center gap-3 text-slate-700">
-                      <Calendar className="h-4 w-4 text-sky-600" />
-                      <span className="text-lg font-semibold">24 May 2025</span>
-                    </div>
-                    <div className="mb-3 flex items-center gap-3 text-slate-700">
-                      <Clock3 className="h-4 w-4 text-sky-600" />
-                      <span className="text-lg font-semibold">10:30 AM</span>
-                    </div>
-                    <div className="mb-3 flex items-center gap-3 text-slate-700">
-                      <Stethoscope className="h-4 w-4 text-sky-600" />
-                      <span className="font-medium">Dr. John Smith</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-slate-700">
-                      <Heart className="h-4 w-4 text-sky-600" />
-                      <span>City Care Hospital</span>
-                    </div>
-                  </div>
-
-                  <button className="mt-5 w-full rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-100">
-                    View Details
-                  </button>
-
-                  <div className="mt-6 space-y-3">
-                    {[
-                      'Book Appointment',
-                      'Upload Report',
-                      'Find Doctor',
-                      'Health Calculator',
-                    ].map((action, index) => (
-                      <div
-                        key={action}
-                        className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={`h-8 w-8 rounded-lg ${index % 2 === 0 ? 'bg-sky-100 text-sky-700' : 'bg-slate-200 text-slate-700'} flex items-center justify-center`}>
-                            {index === 0 ? <Calendar className="h-4 w-4" /> : index === 1 ? <FileText className="h-4 w-4" /> : index === 2 ? <Stethoscope className="h-4 w-4" /> : <Activity className="h-4 w-4" />}
-                          </div>
-                          {action}
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-slate-500" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[24px] border border-red-200 bg-[#fff1f1] p-4 shadow-sm">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
-                    <Bell className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-slate-800">Emergency Assistance</div>
-                    <div className="text-sm text-slate-600">Get immediate help in case of a medical emergency.</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="flex items-center gap-3 rounded-xl bg-white/60 px-4 py-3 text-slate-700 ring-1 ring-red-100">
-                    <div className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Call Emergency</div>
-                    <div className="text-2xl font-bold text-red-600">911</div>
-                  </div>
-                  <button className="rounded-xl border border-red-300 bg-white px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50">
-                    Emergency Contacts
-                  </button>
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.12 }}
+      className="relative group text-center p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-teal-500/40 hover:bg-teal-500/5 transition-all duration-300"
+    >
+      <div className="inline-flex p-3 rounded-xl bg-teal-500/10 text-teal-400 mb-3 group-hover:bg-teal-500/20 transition-colors">
+        <Icon className="w-5 h-5" />
       </div>
+      <div className="text-3xl font-black text-white">
+        {count.toLocaleString()}{suffix}
+      </div>
+      <p className="text-xs font-semibold text-slate-400 mt-1">{label}</p>
+    </motion.div>
+  );
+};
 
-      <footer className="mt-6 border-t border-slate-200 bg-white">
-        <div className="mx-auto grid max-w-[1400px] gap-8 px-6 py-10 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edfaff] text-[#1c7ae0] shadow-sm ring-1 ring-sky-200">
-                <Heart className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-[2rem] font-bold tracking-tight leading-none text-slate-800">HealthCare</div>
-                <div className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Better Health, Better Life</div>
-              </div>
-            </div>
-            <p className="mt-4 max-w-xs text-sm leading-6 text-slate-600">
-              A modern healthcare platform designed to make healthcare simple, accessible, and secure.
-            </p>
-          </div>
+// ─── Feature cards ───────────────────────────────────────────────────────────
+const features = [
+  {
+    icon: Calendar,
+    title: 'Smart Appointment Scheduling',
+    desc: 'Book, manage, and track clinical visits across providers. Get auto-reminders and status notifications for every consult.',
+    color: 'teal',
+    gradient: 'from-teal-500/20 to-teal-500/0',
+    delay: 0,
+  },
+  {
+    icon: FileText,
+    title: 'AI Medical Document Vault',
+    desc: 'Upload lab reports, prescriptions, and discharge summaries. Our AI generates plain-language summaries so you understand every finding.',
+    color: 'indigo',
+    gradient: 'from-indigo-500/20 to-indigo-500/0',
+    delay: 0.07,
+  },
+  {
+    icon: Bell,
+    title: 'Intelligent Reminders',
+    desc: 'Never miss a follow-up. Create smart reminders for medication, lab tests, and appointments with swipe-to-complete actions.',
+    color: 'amber',
+    gradient: 'from-amber-500/20 to-amber-500/0',
+    delay: 0.14,
+  },
+  {
+    icon: HeartHandshake,
+    title: 'Caregiver Access Portal',
+    desc: 'Securely share your health records with family members. Fine-grained permission controls keep you in charge at all times.',
+    color: 'purple',
+    gradient: 'from-purple-500/20 to-purple-500/0',
+    delay: 0.21,
+  },
+  {
+    icon: Activity,
+    title: 'Health Journey Timeline',
+    desc: 'Every appointment, document, and reminder is auto-recorded into a chronological health story you can review at any time.',
+    color: 'emerald',
+    gradient: 'from-emerald-500/20 to-emerald-500/0',
+    delay: 0.28,
+  },
+  {
+    icon: Brain,
+    title: 'AI Health Assistant',
+    desc: 'Describe your symptoms and get evidence-based care suggestions, medicine ideas, and questions to ask your doctor — powered by GPT.',
+    color: 'rose',
+    gradient: 'from-rose-500/20 to-rose-500/0',
+    delay: 0.35,
+  },
+];
 
-          {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h3 className="mb-4 text-base font-bold text-slate-800">{column.title}</h3>
-              <ul className="space-y-2 text-sm text-slate-600">
-                {column.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
+const colorMap: Record<string, string> = {
+  teal: 'text-teal-400 bg-teal-500/10 border-teal-500/20 group-hover:bg-teal-500/20',
+  indigo: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20 group-hover:bg-indigo-500/20',
+  amber: 'text-amber-400 bg-amber-500/10 border-amber-500/20 group-hover:bg-amber-500/20',
+  purple: 'text-purple-400 bg-purple-500/10 border-purple-500/20 group-hover:bg-purple-500/20',
+  emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 group-hover:bg-emerald-500/20',
+  rose: 'text-rose-400 bg-rose-500/10 border-rose-500/20 group-hover:bg-rose-500/20',
+};
+const borderHoverMap: Record<string, string> = {
+  teal: 'hover:border-teal-500/40',
+  indigo: 'hover:border-indigo-500/40',
+  amber: 'hover:border-amber-500/40',
+  purple: 'hover:border-purple-500/40',
+  emerald: 'hover:border-emerald-500/40',
+  rose: 'hover:border-rose-500/40',
+};
+
+const FeatureCard: React.FC<typeof features[0] & { index: number }> = ({
+  icon: Icon, title, desc, color, gradient, delay, index,
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-40px' });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.55, delay }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`relative group p-6 rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur-sm overflow-hidden transition-all duration-300 cursor-default ${borderHoverMap[color]}`}
+    >
+      {/* gradient glow on hover */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
+
+      <div className={`relative inline-flex p-3 rounded-xl border transition-colors duration-300 mb-4 ${colorMap[color]}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <h3 className="relative text-sm font-bold text-white mb-2">{title}</h3>
+      <p className="relative text-xs text-slate-400 leading-relaxed">{desc}</p>
+
+      <div className="relative mt-4 flex items-center gap-1 text-xs font-semibold text-teal-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        Learn more <ChevronRight className="w-3.5 h-3.5" />
+      </div>
+    </motion.div>
+  );
+};
+
+// ─── Testimonials ────────────────────────────────────────────────────────────
+const testimonials = [
+  {
+    name: 'Maria Chen',
+    role: 'Patient — Oncology Care',
+    avatar: 'MC',
+    text: 'CareFlow completely changed how I manage my treatment journey. The AI document summaries help me actually understand my lab reports instead of feeling overwhelmed.',
+    stars: 5,
+  },
+  {
+    name: 'Dr. James Okafor',
+    role: 'Cardiologist, Metro General',
+    avatar: 'JO',
+    text: 'My patients come to appointments better prepared than ever. They arrive with AI-generated questions from their records. This platform is the future of patient care.',
+    stars: 5,
+  },
+  {
+    name: 'Sarah Morgan',
+    role: 'Family Caregiver',
+    avatar: 'SM',
+    text: "As a caregiver for my father, having controlled access to his appointment schedule and reminders means I'm always in the loop without privacy concerns.",
+    stars: 5,
+  },
+];
+
+// ─── Steps ──────────────────────────────────────────────────────────────────
+const steps = [
+  { num: '01', title: 'Create Your Account', desc: 'Sign up as a patient, family caregiver, or clinic admin in under 60 seconds.', icon: Smartphone },
+  { num: '02', title: 'Upload Your Records', desc: 'Add lab reports, prescriptions, and discharge summaries to your secure vault.', icon: CloudUpload },
+  { num: '03', title: 'Get AI Insights', desc: 'Our AI reads your documents and produces plain-language summaries instantly.', icon: Sparkles },
+  { num: '04', title: 'Stay Organized', desc: 'Book appointments, set reminders, and share access with family caregivers.', icon: CheckCircle2 },
+];
+
+// ─── Main Landing Page ───────────────────────────────────────────────────────
+export const LandingPage: React.FC = () => {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const typeText = useTypewriter([
+    'Your Health, Organized',
+    'AI-Powered Medical Records',
+    'Smart Appointment Tracking',
+    'Caregiver Access, Secured',
+  ], 70, 2200);
+
+  // Scroll-reveal sections
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const featuresInView = useInView(featuresRef, { once: true, margin: '-80px' });
+
+  const howRef = useRef<HTMLDivElement>(null);
+  const howInView = useInView(howRef, { once: true, margin: '-80px' });
+
+  const testimonialsRef = useRef<HTMLDivElement>(null);
+  const testimonialsInView = useInView(testimonialsRef, { once: true, margin: '-80px' });
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden">
+
+      {/* ── Nav Bar ── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-slate-950/80 backdrop-blur-md border-b border-white/8 flex items-center justify-between px-6 sm:px-10 lg:px-20">
+        <div className="flex items-center gap-3">
+          <motion.div
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+          >
+            <Heart className="w-7 h-7 text-teal-400" />
+          </motion.div>
+          <span className="text-lg font-black text-white tracking-tight">CareFlow</span>
+        </div>
+
+        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-400">
+          {['Features', 'How It Works', 'Testimonials'].map(item => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase().replace(/ /g, '-')}`}
+              className="hover:text-teal-400 transition-colors"
+            >
+              {item}
+            </a>
           ))}
         </div>
 
-        <div className="border-t border-slate-200 bg-slate-50">
-          <div className="mx-auto flex max-w-[1400px] items-center justify-center px-6 py-4 text-sm text-slate-500">
-            © 2025 HealthCare. All rights reserved.
+        <div className="flex items-center gap-3">
+          <Link
+            to="/login"
+            className="text-sm font-semibold text-slate-300 hover:text-white transition-colors hidden sm:block"
+          >
+            Sign In
+          </Link>
+          <Link to="/register">
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-teal-500/25"
+            >
+              Get Started
+            </motion.button>
+          </Link>
+        </div>
+      </nav>
+
+      {/* ── Hero Section ── */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        {/* Particle canvas background */}
+        <ParticleCanvas />
+
+        {/* Radial gradient glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-teal-500/8 blur-[120px]" />
+          <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] rounded-full bg-indigo-500/6 blur-[100px]" />
+          <div className="absolute top-1/3 right-1/4 w-[350px] h-[350px] rounded-full bg-teal-400/6 blur-[100px]" />
+        </div>
+
+        {/* Grid overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(rgba(45, 212, 191, 1) 1px, transparent 1px), linear-gradient(90deg, rgba(45, 212, 191, 1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
+
+        <motion.div
+          style={{ y: heroY, opacity: heroOpacity }}
+          className="relative z-10 text-center max-w-4xl mx-auto px-6 space-y-8"
+        >
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/25 text-teal-300 text-xs font-bold tracking-wider"
+          >
+            <motion.span
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="w-2 h-2 rounded-full bg-teal-400"
+            />
+            DIGITAL HEALTH PLATFORM — AI-POWERED
+          </motion.div>
+
+          {/* Headline with typewriter */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+          >
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08]">
+              <span className="bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                {typeText}
+              </span>
+              <span className="text-teal-400 animate-pulse">|</span>
+            </h1>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.35 }}
+            className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed"
+          >
+            CareFlow centralizes your medical appointments, lab reports, prescriptions, and AI health insights in one beautifully designed platform — for patients, caregivers, and clinics.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <Link to="/register">
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(45,212,191,0.35)' }}
+                whileTap={{ scale: 0.97 }}
+                className="group flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 font-extrabold text-base shadow-xl shadow-teal-500/30 transition-all"
+              >
+                <Sparkles className="w-5 h-5" />
+                Start Free — No Credit Card
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </Link>
+            <Link to="/login">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-sm text-white font-semibold text-base hover:bg-white/10 transition-all"
+              >
+                <Stethoscope className="w-4 h-4 text-teal-400" />
+                View Demo Dashboard
+              </motion.button>
+            </Link>
+          </motion.div>
+
+          {/* Trust badges */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.75 }}
+            className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400 font-medium"
+          >
+            {[
+              { icon: Lock, text: 'End-to-end Encrypted' },
+              { icon: ShieldCheck, text: 'HIPAA-Aligned Design' },
+              { icon: Zap, text: 'Instant AI Summaries' },
+              { icon: CheckCircle2, text: 'Free for Patients' },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-1.5">
+                <Icon className="w-3.5 h-3.5 text-teal-400" />
+                {text}
+              </div>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-xs text-slate-500"
+        >
+          <span>Scroll to explore</span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+            className="w-5 h-8 rounded-full border-2 border-white/20 flex items-start justify-center pt-1.5"
+          >
+            <div className="w-1 h-2 rounded-full bg-teal-400" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Stats Strip ── */}
+      <section className="relative py-16 border-y border-white/8 bg-slate-900/60 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {stats.map((s, i) => (
+              <StatCard key={s.label} {...s} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features Grid ── */}
+      <section id="features" ref={featuresRef} className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold tracking-wider mb-4">
+              <Zap className="w-3.5 h-3.5" /> PLATFORM CAPABILITIES
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+              Everything your health journey needs
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base mt-3 max-w-xl mx-auto">
+              From AI-powered document analysis to secure caregiver portals — CareFlow handles the complexity so you can focus on your wellbeing.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map((f, i) => (
+              <FeatureCard key={f.title} {...f} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section id="how-it-works" ref={howRef} className="py-24 px-6 bg-slate-900/50">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={howInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-bold tracking-wider mb-4">
+              <CheckCircle2 className="w-3.5 h-3.5" /> GETTING STARTED
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black text-white">Up and running in minutes</h2>
+            <p className="text-slate-400 text-sm mt-3 max-w-md mx-auto">
+              CareFlow is designed to be immediately useful with zero setup.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {steps.map((step, i) => (
+              <motion.div
+                key={step.num}
+                initial={{ opacity: 0, y: 35 }}
+                animate={howInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.55, delay: i * 0.1 }}
+                className="relative text-center group"
+              >
+                {/* Connector line */}
+                {i < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-10 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-teal-500/40 to-transparent" />
+                )}
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900 border border-teal-500/20 text-teal-400 mb-4 group-hover:border-teal-500/50 group-hover:bg-teal-500/10 transition-all duration-300 relative">
+                  <step.icon className="w-7 h-7" />
+                  <span className="absolute -top-2 -right-2 text-[10px] font-black text-slate-950 bg-teal-400 rounded-full w-5 h-5 flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-white mb-1.5">{step.title}</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials ── */}
+      <section id="testimonials" ref={testimonialsRef} className="py-24 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-bold tracking-wider mb-4">
+              <Star className="w-3.5 h-3.5" /> REAL STORIES
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black text-white">Loved by patients & clinicians</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 35 }}
+                animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.55, delay: i * 0.1 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="p-6 rounded-2xl bg-slate-900 border border-white/10 hover:border-teal-500/30 transition-all"
+              >
+                {/* Stars */}
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: t.stars }).map((_, j) => (
+                    <Star key={j} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-slate-300 leading-relaxed mb-5 italic">"{t.text}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-indigo-500 flex items-center justify-center text-xs font-black text-white shrink-0">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">{t.name}</p>
+                    <p className="text-[11px] text-slate-400">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA Banner ── */}
+      <section className="py-24 px-6">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-900 via-slate-900 to-indigo-950 border border-teal-500/20 p-10 sm:p-14 text-center shadow-2xl"
+          >
+            {/* Background glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-teal-400/15 blur-[60px] pointer-events-none" />
+
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ repeat: Infinity, duration: 20, ease: 'linear' }}
+              className="inline-flex p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 mb-6"
+            >
+              <Heart className="w-8 h-8 text-teal-400" />
+            </motion.div>
+
+            <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
+              Take control of your health journey
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base mb-8 max-w-lg mx-auto">
+              Join thousands of patients and caregivers who use CareFlow to stay organized, informed, and connected to their healthcare team.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/register">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(45,212,191,0.4)' }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 font-extrabold text-base shadow-xl shadow-teal-500/30"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Create Free Account
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </Link>
+              <Link to="/login">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/15 bg-white/5 text-white font-semibold text-base hover:bg-white/10 transition-all"
+                >
+                  Sign in with demo →
+                </motion.button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-white/8 py-10 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <Heart className="w-5 h-5 text-teal-400" />
+              <span className="font-black text-white text-base">CareFlow</span>
+              <span className="text-slate-500 text-xs">© 2026 — Built for AnroHack</span>
+            </div>
+            <div className="flex items-center gap-6 text-xs text-slate-400 font-medium">
+              <a href="#features" className="hover:text-teal-400 transition-colors">Features</a>
+              <Link to="/login" className="hover:text-teal-400 transition-colors">Sign In</Link>
+              <Link to="/register" className="hover:text-teal-400 transition-colors">Register</Link>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
+              HIPAA-aligned design
+            </div>
           </div>
         </div>
       </footer>
