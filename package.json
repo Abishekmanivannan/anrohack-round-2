@@ -7,12 +7,20 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "server:dev": "node --watch server/index.js",
+    "db:sqlite:init": "node scripts/init-sqlite.mjs",
+    "db:supabase:check": "node -e \"console.log('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env')\""
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.3.4",
     "@hugeicons/react": "^1.1.10",
+    "@supabase/supabase-js": "^2.49.4",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
     "framer-motion": "^11.3.28",
     "lucide-react": "^0.428.0",
     "ogl": "^1.0.11",

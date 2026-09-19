@@ -1,0 +1,17 @@
+[
+  {
+    "id": "caregiver-access-1",
+    "patient_id": "patient-1",
+    "caregiver_id": "caregiver-1",
+    "caregiver_email": "caregiver@careflow.com",
+    "caregiver_name": "Sarah Morgan",
+    "permissions": [
+      "appointments",
+      "documents",
+      "reminders",
+      "timeline"
+    ],
+    "status": "ACTIVE",
+    "created_at": "2026-08-05T14:30:00Z"
+  }
+]

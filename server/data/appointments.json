@@ -1,0 +1,16 @@
+[
+  {
+    "id": "apt-101",
+    "patient_id": "patient-1",
+    "patient_name": "Alex Morgan",
+    "provider_name": "Dr. Elena Rostova",
+    "clinic_name": "Metro General Health",
+    "department": "Cardiology",
+    "appointment_date": "2026-09-25",
+    "appointment_time": "10:30 AM",
+    "purpose": "6-month routine cardiology follow-up & ECG review",
+    "notes": "Please bring recent blood pressure logs and list of current medications.",
+    "status": "UPCOMING",
+    "created_at": "2026-09-01T11:20:00Z"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "evt-101",
+    "patient_id": "patient-1",
+    "event_type": "APPOINTMENT",
+    "title": "Cardiology Consultation Scheduled",
+    "description": "Upcoming appointment with Dr. Elena Rostova at Metro General Health",
+    "event_date": "2026-09-25T10:30:00Z",
+    "created_at": "2026-09-01T11:20:00Z",
+    "reference_id": "apt-101"
+  }
+]

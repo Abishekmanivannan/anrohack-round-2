@@ -36,6 +36,7 @@ import { TimelineItem } from '../components/domain/TimelineItem';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Modal } from '../components/ui/Modal';
 import { FileUploader } from '../components/ui/FileUploader';
+import { AIChatbox } from '../components/AIChatbox';
 import { SpotlightCard } from '../components/react-bits/SpotlightCard';
 import { GlowBorder } from '../components/react-bits/GlowBorder';
 import { Counter } from '../components/react-bits/Counter';
@@ -154,99 +155,106 @@ export const DashboardPage: React.FC = () => {
         </div>
       </BlurFade>
 
-      {/* Metric Cards Overview Grid */}
       <BlurFade delay={0.15}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <SpotlightCard>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Upcoming Visits
-              </span>
-              <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
-                <Stethoscope className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white mt-2">
-              <Counter value={appointments.filter(a => a.status === 'UPCOMING').length} />
-            </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Scheduled visits</span>
-          </SpotlightCard>
+        <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_0.9fr] gap-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <SpotlightCard>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Upcoming Visits
+                  </span>
+                  <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400">
+                    <Stethoscope className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-white mt-2">
+                  <Counter value={appointments.filter(a => a.status === 'UPCOMING').length} />
+                </div>
+                <span className="text-[11px] text-slate-400 mt-1 block">Scheduled visits</span>
+              </SpotlightCard>
 
-          <SpotlightCard>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Medical Vault
-              </span>
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                <FileText className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white mt-2">
-              <Counter value={documents.length} />
-            </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Uploaded documents</span>
-          </SpotlightCard>
+              <SpotlightCard>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Medical Vault
+                  </span>
+                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-white mt-2">
+                  <Counter value={documents.length} />
+                </div>
+                <span className="text-[11px] text-slate-400 mt-1 block">Uploaded documents</span>
+              </SpotlightCard>
 
-          <SpotlightCard>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Pending Actions
-              </span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                <Bell className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white mt-2">
-              <Counter value={pendingReminders.length} />
-            </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Reminders due</span>
-          </SpotlightCard>
+              <SpotlightCard>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Pending Actions
+                  </span>
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-white mt-2">
+                  <Counter value={pendingReminders.length} />
+                </div>
+                <span className="text-[11px] text-slate-400 mt-1 block">Reminders due</span>
+              </SpotlightCard>
 
-          <SpotlightCard>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Caregiver Link
-              </span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
-                <HeartHandshake className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-sm font-bold text-white mt-3 truncate">
-              {activeCaregiver ? activeCaregiver.caregiver_name : 'No Link'}
-            </div>
-            <span className="text-[11px] text-slate-400 mt-1 block">Active caregiver access</span>
-          </SpotlightCard>
+              <SpotlightCard>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Caregiver Link
+                  </span>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <HeartHandshake className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-sm font-bold text-white mt-3 truncate">
+                  {activeCaregiver ? activeCaregiver.caregiver_name : 'No Link'}
+                </div>
+                <span className="text-[11px] text-slate-400 mt-1 block">Active caregiver access</span>
+              </SpotlightCard>
 
-          <SpotlightCard>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Vitals Score
-              </span>
-              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
-                <Heart className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white mt-2 flex items-baseline gap-1">
-              <Counter value={98} />
-              <span className="text-xs font-bold text-teal-400">%</span>
-            </div>
-            <span className="text-[11px] text-teal-400 mt-1 block">Optimal status</span>
-          </SpotlightCard>
+              <SpotlightCard>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Vitals Score
+                  </span>
+                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
+                    <Heart className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-white mt-2 flex items-baseline gap-1">
+                  <Counter value={98} />
+                  <span className="text-xs font-bold text-teal-400">%</span>
+                </div>
+                <span className="text-[11px] text-teal-400 mt-1 block">Optimal status</span>
+              </SpotlightCard>
 
-          <SpotlightCard>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                AI Summaries
-              </span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-                <Zap className="w-4 h-4" />
-              </div>
+              <SpotlightCard>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    AI Summaries
+                  </span>
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-white mt-2">
+                  <Counter value={documents.length} />
+                </div>
+                <span className="text-[11px] text-purple-400 mt-1 block">Reports analyzed</span>
+              </SpotlightCard>
             </div>
-            <div className="text-2xl font-black text-white mt-2">
-              <Counter value={documents.length} />
-            </div>
-            <span className="text-[11px] text-purple-400 mt-1 block">Reports analyzed</span>
-          </SpotlightCard>
+          </div>
+
+          <div className="h-full">
+            <AIChatbox />
+          </div>
         </div>
       </BlurFade>
 

@@ -12,6 +12,7 @@ import { LogoIcon } from '../components/ui/LogoIcon';
 export const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<UserRole>('PATIENT');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,7 +25,7 @@ export const RegisterPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await register({ name, email, phone, role });
+      await register({ name, email, password, phone, role });
       if (role === 'CAREGIVER') navigate('/caregiver/dashboard');
       else if (role === 'ADMIN') navigate('/admin/dashboard');
       else navigate('/dashboard');
@@ -85,6 +86,15 @@ export const RegisterPage: React.FC = () => {
               onChange={e => setEmail(e.target.value)}
               required
               icon={<Mail className="w-4 h-4" />}
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              placeholder="Create a strong password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
             />
 
             <Input

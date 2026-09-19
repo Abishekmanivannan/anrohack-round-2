@@ -21,7 +21,7 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await login({ email, role });
+      await login({ email, password, role });
       if (role === 'CAREGIVER') navigate('/caregiver/dashboard');
       else if (role === 'ADMIN') navigate('/admin/dashboard');
       else navigate('/dashboard');
@@ -114,6 +114,15 @@ export const LoginPage: React.FC = () => {
               onChange={e => setEmail(e.target.value)}
               required
               icon={<Mail className="w-4 h-4" />}
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
             />
 
             <div>

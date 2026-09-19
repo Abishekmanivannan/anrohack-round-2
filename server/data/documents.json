@@ -1,0 +1,29 @@
+[
+  {
+    "id": "doc-101",
+    "patient_id": "patient-1",
+    "file_name": "Complete Blood Count & Metabolic Panel.pdf",
+    "file_url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "file_size": "2.4 MB",
+    "category": "REPORT",
+    "uploaded_at": "2026-09-11T14:20:00Z",
+    "ai_summary": {
+      "documentType": "Blood Test & Comprehensive Metabolic Panel",
+      "summary": "The lab report indicates normal red and white blood cell counts. Fasting blood glucose is optimal at 92 mg/dL. Lipid panel shows total cholesterol at 210 mg/dL (slightly elevated), with healthy kidney and liver function markers.",
+      "importantDates": [
+        "2026-09-10: Sample Collection Date",
+        "2026-10-10: Suggested Repeat Lipid Panel"
+      ],
+      "mentionedItems": [
+        "Hemoglobin: 14.5 g/dL (Normal: 13.8–17.2)",
+        "Fasting Glucose: 92 mg/dL (Normal: 70–99)",
+        "Total Cholesterol: 210 mg/dL (Desirable: <200)",
+        "eGFR: >90 mL/min (Normal kidney filtration)"
+      ],
+      "questionsForDoctor": [
+        "Are dietary adjustments sufficient to address the total cholesterol level?",
+        "Do I need to repeat the lipid panel in 1 month or 6 months?"
+      ]
+    }
+  }
+]
