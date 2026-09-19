@@ -24,11 +24,20 @@
   overflow: visible;
   gap: 0.5rem;
   border-radius: 1.25rem;
-  background: rgba(15, 23, 42, 0.94);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   padding: 0.5rem 1rem;
+  box-shadow: 
+    0 20px 30px -5px rgba(0, 0, 0, 0.1), 
+    0 8px 12px -6px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+html.dark .dock-panel {
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 
     0 25px 40px -5px rgba(0, 0, 0, 0.75), 
     0 10px 15px -6px rgba(0, 0, 0, 0.5),
@@ -42,18 +51,30 @@
   align-items: center;
   justify-content: center;
   border-radius: 1rem;
-  background-color: rgba(30, 41, 59, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow:
-    0 4px 8px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -1px rgba(0, 0, 0, 0.15);
+  background-color: rgba(241, 245, 249, 0.9);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   outline: none;
   overflow: visible;
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+html.dark .dock-item {
+  background-color: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 4px 8px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.15);
+}
+
 .dock-item:hover, .dock-item.active {
+  background-color: rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.5);
+  box-shadow: 0 0 15px rgba(20, 184, 166, 0.25);
+}
+
+html.dark .dock-item:hover, html.dark .dock-item.active {
   background-color: rgba(20, 184, 166, 0.25);
   border-color: rgba(20, 184, 166, 0.6);
   box-shadow: 0 0 20px rgba(20, 184, 166, 0.35);
@@ -63,11 +84,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #14b8a6;
+  color: #0d9488;
   transition: color 0.2s ease;
 }
 
+html.dark .dock-icon {
+  color: #14b8a6;
+}
+
 .dock-item.active .dock-icon {
+  color: #0f766e;
+}
+
+html.dark .dock-item.active .dock-icon {
   color: #2dd4bf;
 }
 
@@ -78,19 +107,26 @@
   width: fit-content;
   white-space: nowrap;
   border-radius: 0.625rem;
-  border: 1px solid rgba(45, 212, 191, 0.4);
-  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(13, 148, 136, 0.3);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding: 0.35rem 0.875rem;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.025em;
-  color: #5eead4;
+  color: #0f766e;
   transform: translateX(-50%);
+  box-shadow: 0 8px 20px -3px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 60;
+}
+
+html.dark .dock-label {
+  border: 1px solid rgba(45, 212, 191, 0.4);
+  background: rgba(15, 23, 42, 0.96);
+  color: #5eead4;
   box-shadow: 
     0 10px 25px -3px rgba(0, 0, 0, 0.8),
     0 0 15px rgba(20, 184, 166, 0.3);
-  pointer-events: none;
-  z-index: 60;
 }

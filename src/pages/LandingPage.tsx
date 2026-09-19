@@ -23,7 +23,10 @@ import {
   Brain,
   CloudUpload,
   Smartphone,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 // ─── Animated counter hook ───────────────────────────────────────────────────
 function useAnimatedCounter(target: number, duration = 1.8, shouldStart: boolean = false) {
@@ -312,6 +315,7 @@ const steps = [
 
 // ─── Main Landing Page ───────────────────────────────────────────────────────
 export const LandingPage: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -335,26 +339,26 @@ export const LandingPage: React.FC = () => {
   const testimonialsInView = useInView(testimonialsRef, { once: true, margin: '-80px' });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white overflow-x-hidden transition-colors duration-300">
 
       {/* ── Nav Bar ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-slate-950/80 backdrop-blur-md border-b border-white/8 flex items-center justify-between px-6 sm:px-10 lg:px-20">
+      <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-white/8 flex items-center justify-between px-6 sm:px-10 lg:px-20 text-slate-900 dark:text-white transition-colors duration-300">
         <div className="flex items-center gap-3">
           <motion.div
             animate={{ rotate: [0, 5, -5, 0] }}
             transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
           >
-            <Heart className="w-7 h-7 text-teal-400" />
+            <Heart className="w-7 h-7 text-teal-600 dark:text-teal-400" />
           </motion.div>
-          <span className="text-lg font-black text-white tracking-tight">CareFlow</span>
+          <span className="text-lg font-black text-slate-900 dark:text-white tracking-tight">CareFlow</span>
         </div>
 
-        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-400">
+        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-400">
           {['Features', 'How It Works', 'Testimonials'].map(item => (
             <a
               key={item}
               href={`#${item.toLowerCase().replace(/ /g, '-')}`}
-              className="hover:text-teal-400 transition-colors"
+              className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
             >
               {item}
             </a>
@@ -362,9 +366,24 @@ export const LandingPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleTheme}
+            className="p-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+            title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-600" />
+            )}
+          </motion.button>
+
           <Link
             to="/login"
-            className="text-sm font-semibold text-slate-300 hover:text-white transition-colors hidden sm:block"
+            className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block"
           >
             Sign In
           </Link>
@@ -372,7 +391,7 @@ export const LandingPage: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-teal-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-teal-500/25"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 dark:from-teal-500 dark:to-teal-400 text-white dark:text-slate-950 font-extrabold text-sm shadow-lg shadow-teal-500/25"
             >
               Get Started
             </motion.button>

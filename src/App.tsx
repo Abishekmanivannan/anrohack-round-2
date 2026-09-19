@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -34,10 +35,11 @@ import { AdminPatientsPage } from './pages/AdminPatientsPage';
 
 export const App: React.FC = () => {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <NotificationProvider>
-        <Router>
+    <ThemeProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <NotificationProvider>
+          <Router>
           <Routes>
             {/* Public Landing & Auth Routes */}
             <Route path="/" element={<LandingPage />} />
@@ -184,10 +186,11 @@ export const App: React.FC = () => {
             {/* Fallback Catch-all Route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
-        </NotificationProvider>
-      </AuthProvider>
-    </ToastProvider>
+          </Router>
+          </NotificationProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 };
 

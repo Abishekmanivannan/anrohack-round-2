@@ -22,12 +22,12 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none';
 
   const variants = {
-    primary: 'bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold shadow-sm shadow-teal-500/20 focus:ring-teal-400',
-    secondary: 'bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 focus:ring-teal-400',
-    outline: 'border border-white/15 hover:bg-white/10 text-slate-200 focus:ring-slate-400 bg-slate-900 shadow-2xs',
-    ghost: 'hover:bg-white/10 text-slate-300 focus:ring-slate-400',
+    primary: 'bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-400 text-white dark:text-slate-950 font-extrabold shadow-sm shadow-teal-500/20 focus:ring-teal-400',
+    secondary: 'bg-teal-50 dark:bg-teal-500/10 hover:bg-teal-100 dark:hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/30 focus:ring-teal-400',
+    outline: 'border border-slate-200 dark:border-white/15 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 focus:ring-slate-400 bg-white dark:bg-slate-900 shadow-xs',
+    ghost: 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 focus:ring-slate-400',
     danger: 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-600/20 focus:ring-rose-500',
-    gradient: 'bg-gradient-to-r from-teal-500 to-teal-400 hover:from-teal-400 hover:to-teal-300 text-slate-950 font-extrabold shadow-md shadow-teal-500/25 focus:ring-teal-400',
+    gradient: 'bg-gradient-to-r from-teal-600 to-teal-500 dark:from-teal-500 dark:to-teal-400 hover:from-teal-700 hover:to-teal-600 dark:hover:from-teal-400 dark:hover:to-teal-300 text-white dark:text-slate-950 font-extrabold shadow-md shadow-teal-500/25 focus:ring-teal-400',
   };
 
   const sizes = {

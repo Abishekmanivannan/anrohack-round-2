@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { useTheme } from '../../context/ThemeContext';
 import { UserRole } from '../../types';
 import {
   Bell,
@@ -14,6 +15,8 @@ import {
   CheckCircle2,
   BellOff,
   Settings,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
@@ -23,6 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export const Header: React.FC = () => {
   const { user, logout, switchRole } = useAuth();
   const { notifications, unreadCount, markAllRead, markRead } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -65,9 +69,9 @@ export const Header: React.FC = () => {
   };
 
   const notifTypeIcon = (type: string) => {
-    if (type === 'appointment') return <Calendar className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />;
-    if (type === 'reminder') return <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />;
-    return <Bell className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />;
+    if (type === 'appointment') return <Calendar className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />;
+    if (type === 'reminder') return <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />;
+    return <Bell className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0 mt-0.5" />;
   };
 
   const dropdownVariants = {
@@ -77,7 +81,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-slate-900/80 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 lg:px-12 flex items-center justify-between text-white">
+    <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 sm:px-8 lg:px-12 flex items-center justify-between text-slate-900 dark:text-white transition-colors duration-300">
       {/* Left — Brand */}
       <div className="flex items-center gap-3">
         <NavLink to="/" className="flex items-center gap-2.5 group">
@@ -85,14 +89,14 @@ export const Header: React.FC = () => {
             <LogoIcon size="md" />
           </motion.div>
           <div>
-            <span className="text-base sm:text-lg font-black tracking-tight text-white leading-none block">CareFlow</span>
-            <span className="text-[10px] font-semibold text-teal-400 tracking-wider uppercase hidden sm:block">Health Platform</span>
+            <span className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-none block">CareFlow</span>
+            <span className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 tracking-wider uppercase hidden sm:block">Health Platform</span>
           </div>
         </NavLink>
 
-        <div className="h-6 w-px bg-white/10 mx-1 hidden sm:block" />
+        <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-1 hidden sm:block" />
         <div className="hidden md:block">
-          <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+          <h2 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
             Welcome back, {user?.name.split(' ')[0] || 'User'}! 👋
           </h2>
         </div>
@@ -100,6 +104,21 @@ export const Header: React.FC = () => {
 
       {/* Right — Controls */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Theme Switcher Toggle */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggleTheme}
+          className="p-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors shadow-xs dark:shadow-none"
+          title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-indigo-600" />
+          )}
+        </motion.button>
 
         {/* Role switcher */}
         <div className="relative" ref={roleRef}>
@@ -107,27 +126,27 @@ export const Header: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowRoleDropdown(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-500/30 bg-teal-50 dark:bg-teal-500/10 hover:bg-teal-100 dark:hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-semibold transition-all"
           >
-            <Shield className="w-3.5 h-3.5 text-teal-400" />
+            <Shield className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
             <span className="hidden md:inline">Role:</span>
             <Badge variant={getRoleBadgeVariant(user?.role)} size="sm">{user?.role || 'PATIENT'}</Badge>
-            <ChevronDown className={`w-3.5 h-3.5 text-teal-400 transition-transform ${showRoleDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-teal-600 dark:text-teal-400 transition-transform ${showRoleDropdown ? 'rotate-180' : ''}`} />
           </motion.button>
 
           <AnimatePresence>
             {showRoleDropdown && (
               <motion.div
                 variants={dropdownVariants} initial="hidden" animate="visible" exit="exit"
-                className="absolute right-0 mt-2 w-52 rounded-2xl bg-slate-900 p-2 shadow-2xl border border-white/10 z-50 text-xs text-white"
+                className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-xl border border-slate-200 dark:border-white/10 z-50 text-xs text-slate-800 dark:text-white"
               >
                 <div className="px-3 py-1.5 font-bold text-slate-400 uppercase text-[10px] tracking-wider">
                   Switch Demo Role
                 </div>
                 {([
-                  { role: 'PATIENT' as UserRole,   label: '🏥 Patient Dashboard',  activeCls: 'bg-teal-500/20 text-teal-300',   dotCls: 'bg-teal-400' },
-                  { role: 'CAREGIVER' as UserRole, label: '💙 Caregiver Portal',    activeCls: 'bg-indigo-500/20 text-indigo-300', dotCls: 'bg-indigo-400' },
-                  { role: 'ADMIN' as UserRole,     label: '⚕️ Admin Clinic View',   activeCls: 'bg-rose-500/20 text-rose-300',   dotCls: 'bg-rose-400' },
+                  { role: 'PATIENT' as UserRole,   label: '🏥 Patient Dashboard',  activeCls: 'bg-teal-50 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300',   dotCls: 'bg-teal-500 dark:bg-teal-400' },
+                  { role: 'CAREGIVER' as UserRole, label: '💙 Caregiver Portal',    activeCls: 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300', dotCls: 'bg-indigo-500 dark:bg-indigo-400' },
+                  { role: 'ADMIN' as UserRole,     label: '⚕️ Admin Clinic View',   activeCls: 'bg-rose-50 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300',   dotCls: 'bg-rose-500 dark:bg-rose-400' },
                 ]).map(({ role, label, activeCls, dotCls }) => {
                   const active = user?.role === role;
                   return (
@@ -135,7 +154,7 @@ export const Header: React.FC = () => {
                       key={role}
                       onClick={() => handleRoleSwitch(role)}
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left font-semibold transition-all ${
-                        active ? activeCls : 'hover:bg-white/5 text-slate-300'
+                        active ? activeCls : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <span>{label}</span>
@@ -154,14 +173,14 @@ export const Header: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => { setShowNotifications(v => !v); if (!showNotifications && unreadCount > 0) markAllRead(); }}
-            className="relative p-2 rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 transition-colors"
+            className="relative p-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
               <motion.span
                 initial={{ scale: 0 }} animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-teal-400 text-slate-950 text-[10px] font-black flex items-center justify-center px-1"
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-teal-500 dark:bg-teal-400 text-white dark:text-slate-950 text-[10px] font-black flex items-center justify-center px-1"
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </motion.span>
@@ -172,17 +191,17 @@ export const Header: React.FC = () => {
             {showNotifications && (
               <motion.div
                 variants={dropdownVariants} initial="hidden" animate="visible" exit="exit"
-                className="absolute right-0 mt-2 w-80 rounded-2xl bg-slate-900 shadow-2xl border border-white/10 z-50 overflow-hidden"
+                className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-white/10 z-50 overflow-hidden"
               >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-950/60">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/60">
                   <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-teal-400" />
-                    <span className="text-xs font-bold text-white">Notifications</span>
+                    <Bell className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">Notifications</span>
                   </div>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllRead}
-                      className="text-[10px] text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-1"
+                      className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline font-semibold flex items-center gap-1"
                     >
                       <CheckCircle2 className="w-3 h-3" /> Mark all read
                     </button>
@@ -191,8 +210,8 @@ export const Header: React.FC = () => {
 
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <div className="py-8 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
-                      <BellOff className="w-6 h-6 text-slate-600" />
+                    <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400 flex flex-col items-center gap-2">
+                      <BellOff className="w-6 h-6 text-slate-400 dark:text-slate-600" />
                       No notifications right now
                     </div>
                   ) : (
@@ -207,18 +226,20 @@ export const Header: React.FC = () => {
                             setShowNotifications(false);
                           }}
                           className={`w-full text-left p-3 rounded-xl flex items-start gap-2.5 transition-colors ${
-                            n.read ? 'bg-transparent hover:bg-white/5' : 'bg-teal-500/10 border border-teal-500/20 hover:bg-teal-500/20'
+                            n.read 
+                              ? 'bg-transparent hover:bg-slate-100 dark:hover:bg-white/5' 
+                              : 'bg-teal-50 dark:bg-teal-500/10 border border-teal-200 dark:border-teal-500/20 hover:bg-teal-100 dark:hover:bg-teal-500/20'
                           }`}
                         >
                           {notifTypeIcon(n.type)}
                           <div className="min-w-0">
-                            <p className={`text-xs font-semibold truncate ${n.read ? 'text-slate-300' : 'text-white'}`}>
+                            <p className={`text-xs font-semibold truncate ${n.read ? 'text-slate-700 dark:text-slate-300' : 'text-slate-900 dark:text-white'}`}>
                               {n.title}
                             </p>
-                            <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2 text-left">{n.body}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2 text-left">{n.body}</p>
                           </div>
                           {!n.read && (
-                            <span className="w-2 h-2 rounded-full bg-teal-400 shrink-0 mt-1" />
+                            <span className="w-2 h-2 rounded-full bg-teal-500 dark:bg-teal-400 shrink-0 mt-1" />
                           )}
                         </motion.button>
                       ))}
@@ -226,10 +247,10 @@ export const Header: React.FC = () => {
                   )}
                 </div>
 
-                <div className="border-t border-white/10 p-2">
+                <div className="border-t border-slate-200 dark:border-white/10 p-2">
                   <button
                     onClick={() => { navigate('/reminders'); setShowNotifications(false); }}
-                    className="w-full text-center text-xs font-semibold text-teal-400 hover:text-teal-300 py-1.5 rounded-xl hover:bg-teal-500/10 transition-colors"
+                    className="w-full text-center text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline py-1.5 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-500/10 transition-colors"
                   >
                     View all reminders →
                   </button>
@@ -245,7 +266,7 @@ export const Header: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowProfileDropdown(v => !v)}
-            className="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-colors"
+            className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
           >
             <Avatar name={user?.name || 'User'} src={user?.avatarUrl} size="sm" />
           </motion.button>
@@ -254,11 +275,11 @@ export const Header: React.FC = () => {
             {showProfileDropdown && (
               <motion.div
                 variants={dropdownVariants} initial="hidden" animate="visible" exit="exit"
-                className="absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 p-2 shadow-2xl border border-white/10 z-50 text-xs text-white"
+                className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-2xl border border-slate-200 dark:border-white/10 z-50 text-xs text-slate-900 dark:text-white"
               >
-                <div className="px-3 py-2.5 border-b border-white/10 mb-1">
-                  <p className="font-bold text-white">{user?.name}</p>
-                  <p className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email}</p>
+                <div className="px-3 py-2.5 border-b border-slate-200 dark:border-white/10 mb-1">
+                  <p className="font-bold text-slate-900 dark:text-white">{user?.name}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{user?.email}</p>
                   <Badge variant={getRoleBadgeVariant(user?.role)} size="sm" className="mt-1.5">
                     {user?.role}
                   </Badge>
@@ -267,20 +288,20 @@ export const Header: React.FC = () => {
                 <div className="space-y-0.5">
                   <button
                     onClick={() => { setShowProfileDropdown(false); navigate('/profile'); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:bg-white/10 font-semibold text-left transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 font-semibold text-left transition-colors"
                   >
-                    <UserIcon className="w-4 h-4 text-teal-400" /> My Profile
+                    <UserIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" /> My Profile
                   </button>
                   <button
                     onClick={() => { setShowProfileDropdown(false); navigate('/profile'); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:bg-white/10 font-semibold text-left transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 font-semibold text-left transition-colors"
                   >
                     <Settings className="w-4 h-4 text-slate-400" /> Settings
                   </button>
-                  <div className="border-t border-white/10 my-1" />
+                  <div className="border-t border-slate-200 dark:border-white/10 my-1" />
                   <button
                     onClick={() => { setShowProfileDropdown(false); logout(); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 font-semibold text-left transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 font-semibold text-left transition-colors"
                   >
                     <LogOut className="w-4 h-4" /> Log out
                   </button>
